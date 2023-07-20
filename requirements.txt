@@ -1,5 +1,6 @@
 SQLAlchemy==2.0.19
 pydantic==2.0.3
+pydantic[email]
 fastapi==0.100.0
 uvicorn==0.23.1
 psycopg2==2.9.6
