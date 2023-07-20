@@ -1,8 +1,9 @@
 # phone-book
 Phone Book FastAPI
+
 API with CRUD(create, read, update, delete) operations with corresponding endpoints provided.
 
-API documentation available at:
+Documentation available at:
 ```bash
   127.0.0.1:8000/docs
 ```
