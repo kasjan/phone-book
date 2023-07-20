@@ -18,14 +18,17 @@ DATABASE_NAME = ''
 To install all required packages run:
 
 ```bash
-    pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 To start an app run:
 
 ```bash
-    uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 ```
-
+Then run migration using the command:
+```
+alembic upgrade head
+```
 ## Models
 ```mermaid
 erDiagram
