@@ -14,7 +14,8 @@ router = APIRouter(
 
 
 @router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.ShowContact])
-async def get_logged_in_user_contacts(db: Session = Depends(get_db), current_user: user_schemas.User = Depends(get_current_user)):
+async def get_logged_in_user_contacts(db: Session = Depends(get_db),
+                                      current_user: user_schemas.User = Depends(get_current_user)):
     contacts = db.query(models.Contact).filter(models.Contact.user_id == current_user.user_id).all()
     if not contacts:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Empty contact list')
@@ -22,13 +23,15 @@ async def get_logged_in_user_contacts(db: Session = Depends(get_db), current_use
 
 
 @router.get('/all', status_code=status.HTTP_200_OK)
-async def show_all_contacts(db: Session = Depends(get_db), current_user: user_schemas.User = Depends(get_current_user)):
+async def show_all_contacts(db: Session = Depends(get_db),
+                            current_user: user_schemas.User = Depends(get_current_user)):
     contacts = db.query(models.Contact).all()
     return contacts
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
-async def create_contact(request: schemas.Contact, db: Session = Depends(get_db),
+async def create_contact(request: schemas.Contact,
+                         db: Session = Depends(get_db),
                          current_user: user_schemas.User = Depends(get_current_user)):
     new_test = models.Contact(
         first_name=request.first_name,
@@ -55,12 +58,16 @@ async def delete_contact(contact_id, db: Session = Depends(get_db),
 
 
 @router.put('/{contact_id}', status_code=status.HTTP_202_ACCEPTED)
-async def update_contact(contact_id, request: schemas.Contact, db: Session = Depends(get_db),
+async def update_contact(contact_id, request: schemas.ContactUpdate,
+                         db: Session = Depends(get_db),
                          current_user: user_schemas.User = Depends(get_current_user)):
     contact = db.query(models.Contact).filter(models.Contact.id == contact_id)
     if not contact.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Contact with id {contact_id} not found.')
-    contact.update(request.model_dump(exclude_unset=True))
+    contact_data = request.model_dump(exclude_none=True)
+    if not contact_data:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail='Missing data')
+    contact.update(contact_data)
     db.commit()
     return f'Contact {contact_id} updated!'
 

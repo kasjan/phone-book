@@ -190,6 +190,6 @@ def test_delete_contact():
 
 def test_delete_contact_invalid():
     token = test_login()
-    response = client.delete('/contacts/1', headers={"Authorization": f"Bearer {token}"})
+    response = client.delete('/contacts/999', headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 404
-    assert response.json()['detail'] == 'Contact with id 1 not found.'
+    assert response.json()['detail'] == 'Contact with id 999 not found.'
