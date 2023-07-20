@@ -41,7 +41,7 @@ def test_user():
 
 def test_create_user():
     response = client.post('/user/create',
-                           json={'nickname': 'John', 'email': 'john@gmail.com', 'password': 'pass'}, )
+                           json={'nickname': 'John', 'email': 'john@gmail.com', 'password': 'Pass12345'}, )
     assert response.status_code == 201
     data = response.json()
     assert data['email'] == 'john@gmail.com'
@@ -50,10 +50,31 @@ def test_create_user():
 
 def test_create_user_validation():
     response = client.post('/user/create',
-                           json={'nickname': 'John', 'email': 'invalidemail', 'password': 'pass'}, )
+                           json={'nickname': 'John', 'email': 'invalidemail', 'password': 'Pass12345'}, )
     assert response.status_code == 422
     assert response.json()['detail'][0]['msg'] == 'value is not a valid email address: The email address is not ' \
                                                   'valid. It must have exactly one @-sign.'
+
+
+def test_create_user_short_password():
+    response = client.post('/user/create',
+                           json={'nickname': 'John', 'email': 'john@gmail.com', 'password': 'pass'}, )
+    assert response.status_code == 422
+    assert response.json()['detail'][0]['msg'] == 'String should have at least 8 characters'
+
+
+def test_create_user_weak_password_digit():
+    response = client.post('/user/create',
+                           json={'nickname': 'John', 'email': 'john@gmail.com', 'password': 'Passssss'}, )
+    assert response.status_code == 422
+    assert response.json()['detail'][0]['msg'] == 'Value error, Password must contain at least one digit'
+
+
+def test_create_user_weak_password_uppercase():
+    response = client.post('/user/create',
+                           json={'nickname': 'John', 'email': 'john@gmail.com', 'password': 'passssss12'}, )
+    assert response.status_code == 422
+    assert response.json()['detail'][0]['msg'] == 'Value error, Password must contain at least one uppercase letter'
 
 
 def test_get_user():
@@ -62,7 +83,7 @@ def test_get_user():
 
 
 def test_login():
-    response = client.post('/user/login', data={'username': 'john@gmail.com', 'password': 'pass'})
+    response = client.post('/user/login', data={'username': 'john@gmail.com', 'password': 'Pass12345'})
     assert response.status_code == 200
     token = response.json()['access_token']
     assert token is not None
@@ -76,7 +97,7 @@ def test_login_wrong_password():
 
 
 def test_login_wrong_email():
-    response = client.post('/user/login', data={'username': 'joxxhn@gmail.com', 'password': 'pass'})
+    response = client.post('/user/login', data={'username': 'joxxhn@gmail.com', 'password': 'Pass12345'})
     assert response.status_code == 401
     assert response.json()['detail'] == 'Invalid credentials'
 
@@ -154,6 +175,14 @@ def test_create_contact_wrong_email():
                                                   'valid. It must have exactly one @-sign.'
 
 
+def test_create_contact_wrong_data():
+    token = test_login()
+    response = client.post("/contacts", json={'first_name': '12221', 'last_name': 'Smith', 'phone_number': '911',
+                                              'email': 'user@email.com'}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 422
+    assert response.json()['detail'][0]['msg'] == 'Value error, First name cannot contain digits'
+
+
 def test_get_contact_by_id():
     token = test_login()
     response = client.get('/contacts/1', headers={"Authorization": f"Bearer {token}"})
@@ -190,6 +219,6 @@ def test_delete_contact():
 
 def test_delete_contact_invalid():
     token = test_login()
-    response = client.delete('/contacts/1', headers={"Authorization": f"Bearer {token}"})
+    response = client.delete('/contacts/999', headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 404
-    assert response.json()['detail'] == 'Contact with id 1 not found.'
+    assert response.json()['detail'] == 'Contact with id 999 not found.'
